@@ -1,0 +1,1 @@
+let () = print_endline (String.concat " " (Lib.Sort.sort (List.tl (Array.to_list Sys.argv))))

@@ -1,0 +1,16 @@
+# dune exec projekt6_1 2 1 7
+# OCAMLPARAM: unset
+# Shared cache: disabled
+# Shared cache location: /Users/kvmilos/.cache/dune/db
+# Workspace root: /Users/kvmilos/Desktop/OCaml/Zaj6/projekt6_1
+# Auto-detected concurrency: 8
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Dev
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }
+$ /Users/kvmilos/.opam/default/bin/ocamlc.opt -config > /var/folders/sh/zjf7w9qj0kx77nsr46048r4c0000gn/T/dune_cd1e30_output
