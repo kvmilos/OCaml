@@ -1,0 +1,9 @@
+(library
+ (name lib)
+ (modules check primes)
+ (libraries commons))
+
+(rule
+ (target primes.ml)
+ (deps    (:generator ../generator/generator.exe))
+ (action  (with-stdout-to %{target} (run %{generator} 1000))))

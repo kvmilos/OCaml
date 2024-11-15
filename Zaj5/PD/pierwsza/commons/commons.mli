@@ -1,0 +1,1 @@
+val czy_pierwsza : int list -> int -> bool

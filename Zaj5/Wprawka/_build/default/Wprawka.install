@@ -1,0 +1,8 @@
+lib: [
+  "_build/install/default/lib/Wprawka/META"
+  "_build/install/default/lib/Wprawka/dune-package"
+  "_build/install/default/lib/Wprawka/opam"
+]
+bin: [
+  "_build/install/default/bin/Wprawka"
+]

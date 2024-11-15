@@ -1,0 +1,4 @@
+(executable
+ (name generator)
+ (libraries commons)
+ (modes byte exe))

@@ -1,0 +1,4 @@
+(executable
+ (public_name pierwsza)
+ (name main)
+ (libraries commons lib))

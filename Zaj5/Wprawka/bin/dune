@@ -1,0 +1,4 @@
+(executable
+ (public_name Wprawka)
+ (name main)
+ (libraries Wprawka))

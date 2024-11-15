@@ -1,0 +1,1 @@
+lib/biblioteka.ml: Liczba
