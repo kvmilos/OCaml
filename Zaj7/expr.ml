@@ -1,3 +1,5 @@
+open Bstree
+
 type expr = 
 | Int of int
 | Plus of expr * expr
@@ -41,3 +43,18 @@ let rec calcf (f : char -> int) (e : expr) : int =
 let calc (vars : int CharMap.t) (e : expr) : int =
   let f x = CharMap.find x vars in
   calcf f e
+
+module ExprCompare = struct
+  type t = expr
+  let compare e1 e2 =
+    let default_val _ = 0 in
+    let v1 = calcf default_val e1 in
+    let v2 = calcf default_val e2 in
+    if v1 <> v2 then compare v1 v2
+    else compare e1 e2
+end
+
+module ExprTree = BST(ExprCompare)
+
+let sort_expr l =
+  ExprTree.to_list (ExprTree.from_list l)
