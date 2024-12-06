@@ -1,0 +1,4 @@
+(executable
+ (public_name Testowanie)
+ (name main)
+ (libraries lib_inline1))

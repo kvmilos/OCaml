@@ -1,0 +1,7 @@
+(library
+ (name expect3)
+ (libraries base stdio lib_inline1)
+ (inline_tests)
+ (preprocess
+   (pps ppx_expect))
+)

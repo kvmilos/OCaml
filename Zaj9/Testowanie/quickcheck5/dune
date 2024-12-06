@@ -1,0 +1,7 @@
+(library
+ (name quickcheck5)
+ (libraries base stdio core)
+ (inline_tests)
+ (preprocess
+   (pps ppx_assert ppx_jane))
+ )
