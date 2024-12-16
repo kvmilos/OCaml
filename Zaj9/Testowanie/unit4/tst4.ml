@@ -5,5 +5,5 @@ let%test_unit "negation flips the sign" =
     let x = Random.int_incl Int.min_value Int.max_value in
     [%test_eq: Sign.t]
       (Int.sign (Int.neg x))
-      ((*Sign.flip*) (Int.sign x))
+      (Sign.flip (Int.sign x))
   done
