@@ -1,0 +1,7 @@
+(library
+ (name test_PD9)
+ (libraries lib core sexplib)
+ (inline_tests)
+ (preprocess
+  (pps ppx_assert ppx_jane))
+)
