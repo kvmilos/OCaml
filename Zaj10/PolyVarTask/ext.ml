@@ -5,7 +5,6 @@ type ext_expression = ext_expression ext_expr
 
 type ext_instr = [ `If | basic_instr ]
 
-(* Check if an ext_expression is purely basic (no If/Bool) *)
 let rec is_pure_basic (e: ext_expression) : bool =
   match e with
   | `Int _ -> true
@@ -14,7 +13,6 @@ let rec is_pure_basic (e: ext_expression) : bool =
   | `Bool _ -> false
   | `If _ -> false
 
-(* Convert an ext_expression that we know is purely basic to a basic_expression *)
 let rec to_basic_expr (e : ext_expression) : basic_expression =
   match e with
   | `Int i -> `Int i
@@ -33,7 +31,6 @@ let rec eval_ext env (e : ext_expression) : int =
      if is_pure_basic b then
        eval_basic env (to_basic_expr b)
      else
-       (* Evaluate manually using ext rules, since it is not purely basic *)
        match b with
        | `Int i -> i
        | `Var s -> env s
@@ -51,7 +48,6 @@ let rec string_of_ext_expr (e : ext_expression) : string =
      if is_pure_basic b then
        string_of_basic_expr (to_basic_expr b)
      else
-       (* Manually convert to string *)
        match b with
        | `Int i -> string_of_int i
        | `Var s -> s
@@ -69,7 +65,6 @@ let rec translate_ext (e : ext_expression) : [> ext_instr] list =
      if is_pure_basic b then
        translate_basic (to_basic_expr b)
      else
-       (* Manually translate *)
        match b with
        | `Int i -> [`Int i]
        | `Var s -> [`Var s]
@@ -77,7 +72,6 @@ let rec translate_ext (e : ext_expression) : [> ext_instr] list =
 
 let run_ext_instr env stck = function
   | `If ->
-     (* Stack: top: else_val, next: then_val, next: cond *)
      let else_val = List.hd stck in
      let then_val = List.hd (List.tl stck) in
      let cond = List.hd (List.tl (List.tl stck)) in
