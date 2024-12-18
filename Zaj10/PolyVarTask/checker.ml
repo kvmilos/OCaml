@@ -23,5 +23,17 @@ let _ =
   print_endline "--> WITH EXT STUFF";
   check_ext e_expr;
 
-  print_endline "\nTHIS IS THE END..."
+  print_endline "\nTHIS WAS THE END...";
 
+  print_endline "\nADDITIONAL EXT TESTS:";
+  let e1 = `Bool true in
+  let e2 = `If (`Bool true, `Int 42, `Int 0) in
+  let e3 = `If (`Bool false, `Var "z", `Add (`Var "z", `Int 1)) in
+  let e4 = `Add (`Int 10, `Var "x") in
+  let e5 = `Add (`If (`Bool true, `Int 2, `Int 3), `If (`Bool false, `Int 10, `Int 20)) in
+
+  check_ext e1;
+  check_ext e2;
+  check_ext e3;
+  check_ext e4;
+  check_ext e5;
