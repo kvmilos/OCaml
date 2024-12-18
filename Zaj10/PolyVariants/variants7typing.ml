@@ -17,7 +17,7 @@ let w1 = f1 l;;
 
 let f2 = function [] -> "nic" | s :: _ -> s;;
 let w = f2 l;;
-(* Nic jej nierusza! 'a list oznacza tak naprawdę  ∀α. α list *)
+(* Nic jej nie rusza! 'a list oznacza tak naprawdę  ∀α. α list *)
 
 
 (* słabe zmienne *)
@@ -55,7 +55,7 @@ r1;;
 
 (***** check-point ****)
 
-r1 := `Orange "Spain";;
+(* r1 := `Orange "Spain";; *)
 r1;;
 (* r1 : [`Apple | `Orange of string] *)
 
