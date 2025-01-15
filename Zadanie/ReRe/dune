@@ -1,0 +1,6 @@
+(library
+ (name reRe)
+ (public_name Zadanie.reRe)
+ (modules reRe)
+ (libraries testRe re re.pcre)
+)

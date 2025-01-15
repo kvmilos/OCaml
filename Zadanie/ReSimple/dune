@@ -1,0 +1,6 @@
+(library
+ (name reSimple)
+ (public_name Zadanie.reSimple)
+ (modules reSimple)
+ (libraries simpleRegexp testRe)
+)

@@ -1,0 +1,5 @@
+(library
+ (name testRe)
+ (public_name Zadanie.testRe)
+ (modules regexp testRegexp)
+)

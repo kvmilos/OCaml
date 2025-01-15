@@ -1,0 +1,10 @@
+(executable
+ (name main)
+ (public_name Zadanie.main)
+ (modules main)
+ (libraries
+   simpleRegexp
+   testRe
+   reSimple
+   reRe)
+)
