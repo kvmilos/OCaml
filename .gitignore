@@ -23,3 +23,5 @@
 *.a
 *.merlin*
 *_build*
+*PolyVarTask2*
+do_zadania/*
