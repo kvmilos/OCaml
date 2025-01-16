@@ -7,17 +7,15 @@ module Test (Re : REGEXP) = struct
   module StringSet = Set.Make(String)
   type lang = StringSet.t
 
-  let make_lang (letters : string) (n : int) : lang =
+  let make_lang (alphabet : string) (n : int) : lang =
     Random.self_init ();
     let max_len = 300 in
-
     let random_word () : string =
       let len = Random.int (max_len + 1) in
       String.init len (fun _ ->
-        letters.[Random.int (String.length letters)]
+        alphabet.[Random.int (String.length alphabet)]
       )
     in
-
     let rec loop i acc =
       if i <= 0 then acc
       else
@@ -26,14 +24,14 @@ module Test (Re : REGEXP) = struct
     in
     loop n StringSet.empty
 
-  let select_accepted (re : Re.t) (words : lang) : lang =
-    StringSet.filter (fun w -> Re.matches re w) words
+  let select_accepted (re : Re.t) (language : lang) : lang =
+    StringSet.filter (fun w -> Re.matches re w) language
 
-  let test_two (r1 : Re.t) (r2 : Re.t) (words : lang) (debug : bool)
+  let test_two (r1 : Re.t) (r2 : Re.t) (language : lang) (debug : bool)
       : int * float =
     let t0 = Sys.time () in
-    let acc1 = select_accepted r1 words in
-    let acc2 = select_accepted r2 words in
+    let acc1 = select_accepted r1 language in
+    let acc2 = select_accepted r2 language in
     let time_used = Sys.time () -. t0 in
 
     let errors = 
@@ -56,9 +54,9 @@ module Test (Re : REGEXP) = struct
       )
     in
 
-    (* ========== 1. Złośliwe testy ========== *)
+    (* 1. Złośliwe testy *)
     let r_ba_star_b = Re.re "ba*b" in
-    check r_ba_star_b "baabaabaaab" true;
+    check r_ba_star_b "baabaabaaab" false;
     check r_ba_star_b "baaaaaaab" true;
     check r_ba_star_b "bab" true;
     check r_ba_star_b "bb" false;
@@ -70,7 +68,7 @@ module Test (Re : REGEXP) = struct
     check r_a_star_b "b" true;
     check r_a_star_b "a" false;
 
-    (* ========== 2. Porównanie r*r i rr* ========== *)
+    (* 2. Porównanie r*r i rr* *)
     let r_a_star = Re.re "a*" in
     let r_aa_star = Re.re "aa*" in
 
@@ -87,7 +85,7 @@ module Test (Re : REGEXP) = struct
     Printf.printf "Test ((a|b)*(a|b) vs (a|b)(a|b)*): errors=%d, time=%.3fs\n"
       err_abc time_abc;
 
-    (* ========== 3. Porównanie r1|r2 i r2|r1 ========== *)
+    (* 3. Porównanie r1|r2 i r2|r1 *)
     let r_1 = Re.re "a(a|b)*|(a|b)*b" in
     let r_2 = Re.re "(a|b)*b|a(a|b)*" in
     let lang_ab2 = make_lang "ab" 50 in
@@ -97,8 +95,9 @@ module Test (Re : REGEXP) = struct
       "Test (a(a|b)*|(a|b)*b vs (a|b)*b|a(a|b)*): errors=%d, time=%.3fs\n"
       err_ab2 time_ab2;
 
-    (* 2 nietrywialne testy - samemu wymyślić, DO DODANIA *)
+    (* 4. 2 nietrywialne testy - samemu wymyślić, DO DODANIA *)
 
     let total_time = Sys.time () -. start_time in
     (!total_errors, total_time)
+    
 end

@@ -1,6 +1,6 @@
 (executable
  (name main)
- (public_name Zadanie.main)
+ (public_name Zadanie)
  (modules main)
  (libraries
    simpleRegexp
