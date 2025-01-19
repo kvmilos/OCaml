@@ -27,19 +27,31 @@ let rec simpl = function
     | (r', Star(r)) when r = r' -> sr2 (* a|a* = a* *)
     | (Concat(Star r, Concat(r', r'')), r''') when r = r''' && r = r' && r = r'' -> simpl (Concat(r', Star r)) (* (a*aa)|a = aa* *)
     | (r''', Concat(Star r, Concat(r', r''))) when r = r''' && r = r' && r = r'' -> simpl (Concat(r', Star r)) (* a|(a*aa) = aa* *)
-    | _ -> Or(sr1, sr2) (* a|b = a|b *) end
+    | (Concat(Star s1, Concat(s2, s3)), Concat(s4, s5)) when s2 = s4 && s2 = s1 && s3 = s5 -> simpl (Concat(Star s1, s3)) (* (a*b)c|ab = a*bc *)
+    | (Concat(s4, s5), Concat(Star s1, Concat(s2, s3))) when s2 = s4 && s2 = s1 && s3 = s5 -> simpl (Concat(Star s1, s3)) (* ab|(a*b)c = a*bc *)
+    | (Star(Or(r1, r2)), r') when r' = r1 || r' = r2 -> Star(Or(r1,r2)) (* (a|b)*|a = (a|b)* *)
+    | (r', Star(Or(r1, r2))) when r' = r1 || r' = r2 -> Star(Or(r1,r2)) (* a|(a|b)* = (a|b)* *)
+    | (Concat(Star r, r'), r'') when r' = r'' -> simpl (Concat(Star r, r')) (* a*b|b = a*b *)
+    | (r'', Concat(Star r, r')) when r' = r'' -> simpl (Concat(Star r, r')) (* b|a*b = a*b *)
+    | (Concat(Star s1, s2), Concat(s3, s4)) when s1 = s3 && s2 = s4 -> simpl (Concat(Star s1, s2)) (* a*b|ab = a*b *)
+    | (Concat(s3, s4), Concat(Star s1, s2)) when s1 = s3 && s2 = s4 -> simpl (Concat(Star s1, s2)) (* ab|a*b = a*b *)
+    | (Concat(Star s1, Concat(s2, s3)), s4) when s1 = s2 && s3 = s4 -> simpl (Concat(Star s1, s3)) (* (a*abc|bc = a*bc *)
+    | (s4, Concat(Star s1, Concat(s2, s3))) when s1 = s2 && s3 = s4 -> simpl (Concat(Star s1, s3)) (* abc|a*bc = a*bc *)
+    | _ -> Or(sr1, sr2) (* a|b = a|b *) 
+  end
 | (Concat(r1, r2)) -> begin
   let sr1 = simpl r1 in
   let sr2 = simpl r2 in
   match (sr1, sr2) with
   | (Eps, _) -> simpl r2 (* εa = a *)
   | (_, Eps) -> simpl r1 (* aε = a *)
-  | (_, _) -> Concat(simpl r1, simpl r2) (* (a|a)a = aa *) end
+  | (_, _) -> Concat(simpl r1, simpl r2) (* (a|a)a = aa *) 
+  end
 | Star r1 -> let sr = simpl r1 in
     (match sr with
     | Star _ -> sr (* a** = a* *)
     | _ -> Star sr) (* a* = a* *)
-
+    
 (** Czy ε należy do języka? *)
     let rec nullable = function
   | Eps -> true
@@ -67,7 +79,7 @@ let rec empty = function
   | Eps -> Empty (* ε -> ∅ *)
   | Lit x -> if x = c then Eps else Empty (* a -> ε, b -> ∅ *)
   | Or(r1, r2) -> simpl (Or(simpl (der c r1), simpl (der c r2))) (* a*c|ab -> a*c|b *)
-  | Concat(r1, r2) -> 
+  | Concat(r1, r2) ->
     let dr1 = simpl (der c r1) in
     let dr2 = simpl (der c r2) in
     if nullable r1 then simpl (Or(simpl (Concat(dr1, r2)), dr2))
@@ -145,57 +157,43 @@ let () =
 
   Printf.printf "Testowanie funkcji der oraz simpl: \n";
   Printf.printf "der 'a' a*a: %s\n" (to_string (der 'a' r1));
-  (* dobrze *)
   Printf.printf "der 'a' (a|b)*: %s\n" (to_string (der 'a' r2));
-  (* dobrze *)
   Printf.printf "der 'a' a*aa: %s\n" (to_string (der 'a' r3));
-  (* dobrze *)
   Printf.printf "der 'a' aa*bc: %s\n" (to_string (der 'a' r4));
-  (* dobrze *)
   Printf.printf "der 'a' a*abc: %s\n" (to_string (der 'a' r5));
-  (* źle *)
 
   let r = Or(Concat(Star(Lit 'a'), Concat(Lit 'a', Lit 'a')), Lit 'a') in
   let simplified = simpl r in
   Printf.printf "Simplifying a*aa|a: %s\n" (to_string simplified);
-  (* dobrze *)
 
   let r = Or(Or(Lit 'a', Lit 'b'), Lit 'b') in
   let simplified = simpl r in
   Printf.printf "Simplifying (a|b)|b: %s\n" (to_string simplified);
-  (* dobrze *)
 
   let r = Or(Star(Lit 'a'), Lit 'a') in
   let simplified = simpl r in
   Printf.printf "Simplifying a*|a: %s\n" (to_string simplified);
-  (* dobrze *)
 
   let r = Or(Concat(Star(Lit 'a'), Lit 'b'), Lit 'b') in
   let simplified = simpl r in
   Printf.printf "Simplifying a*b|b: %s\n" (to_string simplified);
-  (* źle *)
   
   let r = Or(Concat(Star(Lit 'a'), Lit 'b'), Concat(Lit 'a', Lit 'b')) in
   let simplified = simpl r in
   Printf.printf "Simplifying a*b|ab: %s\n" (to_string simplified);
-  (* źle *)
 
   let r = Or(Concat(Star(Lit 'a'), Concat(Lit 'a', Concat(Lit 'b', Lit 'c'))), Concat(Lit 'b', Lit 'c')) in
   let simplified = simpl r in
   Printf.printf "Simplifying a*abc|bc: %s\n" (to_string simplified);
-  (* źle *)
 
   let r = Star(Star(Lit 'a')) in
   let simplified = simpl r in
   Printf.printf "Simplifying (a*)*: %s\n" (to_string simplified);
-  (* dobrze *)
 
   let r = Or(Star(Or(Lit 'a', Lit 'b')), Lit 'a') in
   let simplified = simpl r in
   Printf.printf "Simplifying (a|b)*|a: %s\n" (to_string simplified);
-  (* źle *)
 
   let r = Or(Star(Or(Lit 'a', Lit 'b')), Or(Lit 'a', Lit 'b')) in
   let simplified = simpl r in
   Printf.printf "Simplifying (a|b)*|(a|b): %s\n" (to_string simplified);
-  (* dobrze *)
