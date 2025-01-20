@@ -148,7 +148,7 @@ let to_string (r : char reg) : string =
 let parse s =
   Parser.regex Lexer.token (Lexing.from_string s)
 
-let () =
+(* let () =
   let r1 = Concat(Star(Lit 'a'), Lit 'a') in
   let r2 = Star(Or(Lit 'a', Lit 'b')) in
   let r3 = Concat(Star(Lit 'a'), Concat(Lit 'a', Lit 'a')) in
@@ -196,4 +196,4 @@ let () =
 
   let r = Or(Star(Or(Lit 'a', Lit 'b')), Or(Lit 'a', Lit 'b')) in
   let simplified = simpl r in
-  Printf.printf "Simplifying (a|b)*|(a|b): %s\n" (to_string simplified);
+  Printf.printf "Simplifying (a|b)*|(a|b): %s\n" (to_string simplified); *)

@@ -1,5 +1,3 @@
-(* DO DOPRACOWANIA *)
-
 open SimpleRegexp
 
 type t = char reg
