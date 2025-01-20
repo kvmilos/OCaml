@@ -61,6 +61,7 @@ module Test (Re : REGEXP) = struct
       let got = Re.matches re s in
       (* while checking re on s, got got, and expected expected *)
       if got <> expected then (Printf.printf "Error: while checking the word %s, got %b, expected %b\n" s got expected; total_errors := !total_errors + 1)
+      else Printf.printf "OK: got %b, expected %b on the regex " got expected; Re.debug re
     in
 
     (* 1. Złośliwe testy *)
