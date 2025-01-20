@@ -1,28 +1,14 @@
+(* DO DOPRACOWANIA *)
+
 open TestRe.TestRegexp
 
-module type REGEXP_TEST = sig
-  val name: string
-  val test: unit -> int * float
-end
-
-let run_test (module M: REGEXP_TEST) =
-  let errors, time = M.test () in
-  Printf.printf "%s: %d errors in %f seconds\n" M.name errors time
-
-module TSimple = struct
-  let name = "ReSimple"
-  include Test(ReSimple)
-end
-
-module TReRe = struct
-  let name = "ReRe"
-  include Test(ReRe)
-end
-
-let tests : (module REGEXP_TEST) list = [
-  (module TSimple);
-  (module TReRe);
-]
-
 let () =
-  List.iter run_test tests
+  Printf.printf "ReSimple: TESTING\n";
+  let module TSimple = Test(ReSimple) in
+  let (errors_simple, time_simple) = TSimple.test () in
+  Printf.printf "ReSimple: %d errors in %f seconds\n" errors_simple time_simple;
+
+  Printf.printf "ReRe: TESTING\n";
+  let module TReRe = Test(ReRe) in
+  let (errors_rere, time_rere) = TReRe.test () in
+  Printf.printf "ReRe: %d errors in %f seconds\n" errors_rere time_rere;
