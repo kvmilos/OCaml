@@ -7,7 +7,7 @@ module Test (Re : REGEXP) = struct
 
   let make_lang (alphabet : string) (n : int) : lang =
     Random.self_init ();
-    let max_len = 500 in
+    let max_len = 500 in (* "500" można zamienić na "max n 500", ale przy 500 się łatwiej testuje :)  *)
     let random_word () : string =
       let len = Random.int (max_len + 1) in
       String.init len (fun _ ->
@@ -18,7 +18,8 @@ module Test (Re : REGEXP) = struct
       if i <= 0 then acc
       else
         let w = random_word () in
-        loop (i - 1) (StringSet.add w acc)
+        if StringSet.mem w acc then loop i acc
+        else loop (i - 1) (StringSet.add w acc)
     in
     loop n StringSet.empty
 
@@ -34,7 +35,7 @@ module Test (Re : REGEXP) = struct
 
     let errors = 
       if StringSet.equal acc1 acc2 then (
-        if debug then Printf.printf "[test_two] Sets are equal!\n"; 
+        if debug then Printf.printf "[test_two] Sets are equal!\n";(*Printf.printf "Regex1: "; Re.debug r1;Printf.printf "Regex2: "; Re.debug r2;*)
         0
       ) else (
         if debug then (
@@ -59,9 +60,8 @@ module Test (Re : REGEXP) = struct
 
     let check (re : Re.t) (s : string) (expected : bool) : unit =
       let got = Re.matches re s in
-      (* while checking re on s, got got, and expected expected *)
-      if got <> expected then (Printf.printf "Error: while checking the word %s, got %b, expected %b\n" s got expected; total_errors := !total_errors + 1)
-      else Printf.printf "OK: got %b, expected %b on the regex " got expected; Re.debug re
+      if got <> expected then (Printf.printf "Error: while checking the word %s, got %b, expected %b on the regex" s got expected; Re.debug re; total_errors := !total_errors + 1)
+      else Printf.printf "OK: while checking the word %s, got %b, expected %b on the regex " s got expected; Re.debug re
     in
 
     (* 1. Złośliwe testy *)
@@ -119,12 +119,13 @@ module Test (Re : REGEXP) = struct
     total_errors := !total_errors + err_ab3;
     Printf.printf "Test (a*b|b vs a*b): errors=%d, time=%.5fs\n" err_ab3 time_ab3;
 
-    let r_5 = Re.re "aa*bc" in
+    (* let r_5 = Re.re "aa*bc" in
     let r_6 = Re.re "a*abc|abc" in
     let lang_ab4 = make_lang "abc" 5000 in
     let (err_ab4, time_ab4) = test_two r_5 r_6 lang_ab4 true in
     total_errors := !total_errors + err_ab4;
-    Printf.printf "Test (aa*bc vs a*abc|bc): errors=%d, time=%.5fs\n" err_ab4 time_ab4;
+    Printf.printf "Test (aa*bc vs a*abc|bc): errors=%d, time=%.5fs\n" err_ab4 time_ab4; *)
+    (* TO BYŁ JEDNAK ZŁY TEST, aa*bc to coś innego niż a*abc|bc (to drugie == a*bc) *)
 
     let r_7 = Re.re "(a*)*" in
     let r_8 = Re.re "a*" in
@@ -147,6 +148,35 @@ module Test (Re : REGEXP) = struct
     total_errors := !total_errors + err_ab7;
     Printf.printf "Test (abc|a*bc vs a*bc): errors=%d, time=%.5fs\n" err_ab7 time_ab7;
 
+    Printf.printf "NOWE: \n";
+    let r_13 = Re.re "(ab)(cd)" in
+    let r_14 = Re.re "a(b(cd))" in
+    let lang_ab8 = make_lang "abcd" 5000 in
+    let (err_ab8, time_ab8) = test_two r_13 r_14 lang_ab8 true in
+    total_errors := !total_errors + err_ab8;
+    Printf.printf "Test ((ab)(cd) vs a(b(cd))): errors=%d, time=%.5fs\n" err_ab8 time_ab8;
+
+    let r_15 = Re.re "a(b|c)d" in
+    let r_16 = Re.re "a(bd|cd)" in
+    let lang_ab9 = make_lang "abcd" 5000 in
+    let (err_ab9, time_ab9) = test_two r_15 r_16 lang_ab9 true in
+    total_errors := !total_errors + err_ab9;
+    Printf.printf "Test (a(b|c)d vs a(bd|cd)): errors=%d, time=%.5fs\n" err_ab9 time_ab9;
+
+    let r_17 = Re.re "(((a*)*)*)*" in
+    let r_18 = Re.re "a*" in
+    let lang_ab10 = make_lang "ab" 5000 in
+    let (err_ab10, time_ab10) = test_two r_17 r_18 lang_ab10 true in
+    total_errors := !total_errors + err_ab10;
+    Printf.printf "Test ((((a*)*)*)* vs a*): errors=%d, time=%.5fs\n" err_ab10 time_ab10;
+
+    let r_19 = Re.re "a(b((cd)ef)g)" in
+    let r_20 = Re.re "a(b(c(d(ef)(fg))))" in
+    let lang_ab11 = make_lang "abcdefg" 5000 in
+    let (err_ab11, time_ab11) = test_two r_19 r_20 lang_ab11 true in
+    total_errors := !total_errors + err_ab11;
+    Printf.printf "Test (a(b((cd)ef)g) vs a(b(c(d(ef)(fg))))): errors=%d, time=%.5fs\n" err_ab11 time_ab11;
+
     let extra_patterns = [
       ("(a|a)", "a", true);
       ("(a|a)", "b", false);
@@ -159,6 +189,9 @@ module Test (Re : REGEXP) = struct
       ("a*a", "aaa", true);
       ("aa*", "aaa", true);
       ("a*a", "b", false);
+      (* NOWE *)
+      ("(a(b(c(d(ef*)))))", "abcde", true);
+      ("(a(b(c(d(ef*)))))", "abcdefffffff", true);
     ] in
     List.iter (fun (pattern, word, expected) ->
       let r = Re.re pattern in

@@ -43,6 +43,7 @@ let rec simpl = function
   let sr1 = simpl r1 in
   let sr2 = simpl r2 in
   match (sr1, sr2) with
+  | Concat(s1, s2), s3 -> Concat(s1, Concat(s2, s3)) (* NOWE: (ab)c -> a(bc) *)
   | (Eps, _) -> simpl r2 (* εa = a *)
   | (_, Eps) -> simpl r1 (* aε = a *)
   | (_, _) -> Concat(simpl r1, simpl r2) (* (a|a)a = aa *) 
@@ -110,12 +111,12 @@ let rec repr f = function
   | Concat(r1, r2) ->
     let r1_str = repr f r1 in
     let r2_str = repr f r2 in
-    let r1_wrapped = match r1 with Or _ -> "(" ^ r1_str ^ ")" | _ -> r1_str in
-    let r2_wrapped = match r2 with Or _ -> "(" ^ r2_str ^ ")" | _ -> r2_str in
+    let r1_wrapped = match r1 with Or _ | Concat _ -> "(" ^ r1_str ^ ")" | _ -> r1_str in (* część "| Concat _" dodana tylko na potrzebę testu (ab)(cd) -> (a(b(cd))) *)
+    let r2_wrapped = match r2 with Or _ | Concat _ -> "(" ^ r2_str ^ ")" | _ -> r2_str in (* część "| Concat _" dodana tylko na potrzebę testu (ab)(cd) -> (a(b(cd))) *)
     r1_wrapped ^ r2_wrapped
   | Star r ->
     let r_str = repr f r in
-    if match r with Or _ -> true | _ -> false then "(" ^ r_str ^ ")*"
+    if match r with Or _ -> true | Concat _ -> true | _ -> false then "(" ^ r_str ^ ")*"
     else r_str ^ "*"
   
 (** Wyrażenie regularne akceptujące język złożony z jednego jednoliterowego słowa. *)
@@ -148,7 +149,7 @@ let to_string (r : char reg) : string =
 let parse s =
   Parser.regex Lexer.token (Lexing.from_string s)
 
-(* let () =
+let () =
   let r1 = Concat(Star(Lit 'a'), Lit 'a') in
   let r2 = Star(Or(Lit 'a', Lit 'b')) in
   let r3 = Concat(Star(Lit 'a'), Concat(Lit 'a', Lit 'a')) in
@@ -196,4 +197,74 @@ let parse s =
 
   let r = Or(Star(Or(Lit 'a', Lit 'b')), Or(Lit 'a', Lit 'b')) in
   let simplified = simpl r in
-  Printf.printf "Simplifying (a|b)*|(a|b): %s\n" (to_string simplified); *)
+  Printf.printf "Simplifying (a|b)*|(a|b): %s\n" (to_string simplified);
+
+  Printf.printf "NOWE: \n";
+  Printf.printf "Disclaimer: zmieniłem wypisywanie nawiasów, tylko po to, żeby było widać nawiasy przy konkatenacjach. Tylko na potrzeby tego testu.\n";
+
+  let r = Concat(Concat(Lit 'a', Lit 'b'), Lit 'c') in
+  let simplified = simpl r in
+  Printf.printf "Simplifying (ab)c: %s\n" (to_string simplified);
+
+  let r = Concat(Concat(Lit 'a', Lit 'b'), Concat(Lit 'c', Lit 'd')) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying (ab)(cd): %s\n" (to_string simplified);
+
+  let r = Concat(Concat(Concat(Lit 'a', Lit 'b'), Lit 'c'), Concat(Lit 'd', Lit 'e')) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying ((ab)c)(de): %s\n" (to_string simplified);
+
+  let r = Concat(Concat(Concat(Concat(Lit 'a', Lit 'b'), Lit 'c'), Lit 'd'), Lit 'e') in
+  let simplified = simpl r in
+  Printf.printf "Simplifying (((ab)c)d)e: %s\n" (to_string simplified);
+
+  let r = Concat(Star(Concat(Lit 'a', Lit 'b')), Lit 'c') in
+  let simplified = simpl r in
+  Printf.printf "Simplifying (ab)*c: %s\n" (to_string simplified);
+
+  let r = Concat(Star(Star(Lit 'a')), Concat(Lit 'b', Lit 'c')) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying (a**)(bc): %s\n" (to_string simplified);
+
+  let r = Concat(Or(Lit 'a', Lit 'b'), Concat(Lit 'c', Or(Lit 'd', Lit 'e'))) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying (a|b)(c(d|e)): %s\n" (to_string simplified);
+
+  let r = Concat(Or(Concat(Lit 'a', Lit 'b'), Lit 'c'), Lit 'd') in
+  let simplified = simpl r in
+  Printf.printf "Simplifying ((ab)|c)d: %s\n" (to_string simplified);
+
+  let r = Concat(
+    Concat(Star(Lit 'a'), Concat(Lit 'b', Lit 'c')),
+    Concat(Lit 'd', Concat(Star(Lit 'e'), Lit 'f'))
+  ) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying ((a*)(bc))((d)((e*)f)): %s\n" (to_string simplified);
+
+  let r = Concat(
+    Star(Concat(Lit 'a', Or(Lit 'b', Lit 'c'))),
+    Concat(Concat(Lit 'd', Lit 'e'), Star(Lit 'f'))
+  ) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying ((a(b|c))*)(de)(f*): %s\n" (to_string simplified);
+
+  let r = Concat(
+    Concat(Star(Lit 'a'), Star(Concat(Lit 'b', Lit 'c'))),
+    Concat(Or(Lit 'd', Lit 'e'), Or(Lit 'f', Lit 'g'))
+  ) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying ((a*)(bc)*)((d|e)(f|g)): %s\n" (to_string simplified);
+
+  let r = Star(Star(Star(Star(Star(Star(Star(Star(Star(Star(Lit 'a')))))))))) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying (((((((((a*)*)*)*)*)*)*)*)*)*: %s\n" (to_string simplified);
+
+  (*   (* aa*bc vs a*abc|bc) *) *)
+  let r = Concat(Lit 'a', Concat(Star(Lit 'a'), Concat(Lit 'b', Lit 'c'))) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying aa*bc: %s\n" (to_string simplified);
+
+  let r = Or(Concat(Star(Lit 'a'), Concat(Lit 'a', Concat(Lit 'b', Lit 'c'))), Concat(Lit 'b', Lit 'c')) in
+  let simplified = simpl r in
+  Printf.printf "Simplifying a*abc|bc: %s\n" (to_string simplified);
+  
