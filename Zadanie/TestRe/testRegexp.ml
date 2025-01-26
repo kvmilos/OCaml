@@ -60,8 +60,17 @@ module Test (Re : REGEXP) = struct
 
     let check (re : Re.t) (s : string) (expected : bool) : unit =
       let got = Re.matches re s in
-      if got <> expected then (Printf.printf "Error: while checking the word %s, got %b, expected %b on the regex" s got expected; Re.debug re; total_errors := !total_errors + 1)
-      else Printf.printf "OK: while checking the word %s, got %b, expected %b on the regex " s got expected; Re.debug re
+      if got <> expected then (
+      Printf.printf "Error: while checking the word %s, got %b, expected %b on the regex" s got expected;
+      Re.debug re;
+      total_errors := !total_errors + 1
+      ) else (
+      if String.length(s) <= 50 then
+        Printf.printf "OK: while checking the word %s, got %b, expected %b on the regex " s got expected
+      else
+        Printf.printf "OK: bardzo długie słowo, got %b, expected %b on the regex " got expected;
+      Re.debug re
+      )
     in
 
     (* 1. Złośliwe testy *)
